@@ -1,0 +1,44 @@
+// dumpyard
+
+
+
+std::list<sf::Vector2f> distributeEqualDistance(unsigned int number_of_points, std::list<sf::Vector2f> spline_points){
+
+    std::cout << "\n\n\n\n\n\n new Frame: \n";
+    std::list<sf::Vector2f> equal_points;
+    sf::Vector2f previous_point = spline_points.front();
+    sf::Vector2f end_point = spline_points.back();
+    while (true){
+        float t = 0.5;
+        float last_t = 0;
+        float delta_t = .25;
+        float target_distance = minimum_distance_per_line;
+        float actual_distance = 0.0;
+        float threshhold = 1 / (1000); // -> 1 / 1k 
+        while (abs(target_distance - actual_distance) >= threshhold && actual_distance >= threshhold) {
+            actual_distance = dist_2f(calcPointOnSpline(spline_points, t).front(), previous_point);
+            if (actual_distance < target_distance || t < last_t){
+                t = t + delta_t;
+            } else{
+                t = t - delta_t;
+            }
+            std::cout << actual_distance << " : distance to last point. target was : " << target_distance << '\n';
+            delta_t = delta_t / 2;
+        }
+        equal_points.push_back(previous_point);
+        previous_point = calcPointOnSpline(spline_points, t).front();
+        std::cout << "last point is: " << previous_point.x << ' ' << previous_point.y << " t was: " << t << '\n';
+        last_t = t;
+        if (actual_distance <= threshhold){
+            break;  
+        }
+
+    }
+    equal_points.push_back(previous_point);
+    return equal_points;    
+}
+
+
+
+
+
