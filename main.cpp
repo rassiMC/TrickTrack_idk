@@ -26,10 +26,6 @@ using namespace std;
 int LOLOLOL = 6546;
 
 
-
-
-
-
 int main() {
 
 
@@ -71,7 +67,6 @@ int main() {
         splines.push_back(Spline(points, 100));
     }
 
-    
 
     Spline spline(points, 100);
     
@@ -126,11 +121,6 @@ int main() {
         }else {
             shape.setFillColor(sf::Color::Blue);
         }
-
-        
-        
-
-
 
         
         points.push_back(mousePosF);
