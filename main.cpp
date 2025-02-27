@@ -143,7 +143,6 @@ int main() {
             }
         }
 
-
         if (l_click) {
             splines.push_back(Spline(points, 10));
             points.clear();
@@ -158,10 +157,7 @@ int main() {
             TA.add_Track(track);
             points.clear();
             points.push_back(mousePosF);
-        }else if (not r_click) {
-            points.pop_back();
         }
-
         window.display();
 
         count ++;
