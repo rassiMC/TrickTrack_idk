@@ -37,10 +37,6 @@ void screenSetup(){
     shape.setFillColor(sf::Color::Red);
 }
 
-sf::Vector2i getMousePos(){
-    return sf::Mouse::getPosition(window);
-}
-
 //Classes:
 
 Arc::Arc(float radius, float startAngle, float endAngle, unsigned int pointCount) {
@@ -66,64 +62,91 @@ void Arc::draw(sf::RenderTarget& target, sf::RenderStates states) const{
     target.draw(vertexArray, states);
 };
 
-//Class Spline
+//Class DisplaySpline
 
-Spline::Spline(std::list<sf::Vector2f> points, unsigned int pointCount) {
+DisplaySpline::DisplaySpline(std::list<sf::Vector2f> points, unsigned int pointCount) {
+    std::cout << "Constructor called with " << points.size() << " points" << std::endl;
+    vertexArray = sf::VertexArray(sf::LineStrip, pointCount);  // Initialize with primitive type and size
+    std::cout << "After construction: " << vertexArray.getVertexCount() << " vertices" << std::endl;
     
-    vertexArray.setPrimitiveType(sf::LineStrip);
-    vertexArray.resize(pointCount);
-
-    for (unsigned int i = 0; i < pointCount; i++){
-        float t = static_cast<float>(i) / (pointCount - 1);
-        
-        vertexArray[i].position = calcPointOnSpline(points, t).front();
+    // Initialize all vertices with a default position and color
+    for (size_t i = 0; i < vertexArray.getVertexCount(); ++i) {
+        vertexArray[i].position = sf::Vector2f(0, 0);
         vertexArray[i].color = sf::Color::White;
-
     }
-    
+
+    if (points.empty()) {
+        std::cout << "Empty points list, returning" << std::endl;
+        return;
+    }
+
+    current_points = points;
+    vertexArray.setPrimitiveType(sf::LineStrip);  // Initialize primitive type first
+    vertexArray.resize(pointCount);  // Now safe to resize
+
+    std::list<sf::Vector2f> distributed_points = distributeEqualDistance(spline_length(points), points);
+    if (distributed_points.empty()) {
+        return;
+    }
+
+    unsigned int actual_points = std::min(pointCount, (unsigned int)distributed_points.size());
+    vertexArray.resize(actual_points);
+
+    auto it = distributed_points.begin();
+    for (unsigned int i = 0; i < actual_points && it != distributed_points.end(); ++i, ++it) {
+        vertexArray[i].position = *it;
+        vertexArray[i].color = sf::Color::White;
+    }
 }
 
-void Spline::redefine(std::list<sf::Vector2f> points, unsigned int pointCount) {
-    std::cout << "test if this happend in redefine_0" << std::endl;
+void DisplaySpline::redefine(std::list<sf::Vector2f> points, unsigned int pointCount) {
+    if (points.size() < 2) {
+        return;
+    }
 
-    std::list<sf::Vector2f> points_on_spline = distributeEqualDistance(spline_length(points), points); 
-    pointCount = size(points_on_spline);
+    current_points = points;
     
-    vertexArray.resize(pointCount);
-    std::cout << "test if this happend in redefine_1" << std::endl;
-    // happened
+    // Ensure vertexArray is properly initialized
+    if (vertexArray.getVertexCount() == 0) {
+        vertexArray = sf::VertexArray(sf::LineStrip, pointCount);
+        // Initialize all vertices
+        for (size_t i = 0; i < vertexArray.getVertexCount(); ++i) {
+            vertexArray[i].position = sf::Vector2f(0, 0);
+            vertexArray[i].color = sf::Color::White;
+        }
+    }
 
-    for (unsigned int i = 0; i < pointCount; i++){
-        float t = static_cast<float>(i) / (pointCount - 1);
-        std::cout << "test if this happend in redefine_"<< i + 2 << std::endl;
-        // happened
-        if (!points_on_spline.empty()) {
-            vertexArray[i].position = points_on_spline.front();
-            points_on_spline.pop_front();
+    float length = spline_length(points);
+    if (length < 1.0f) {
+        return;
+    }
+
+    std::list<sf::Vector2f> distributed_points = distributeEqualDistance(length, points);
+    if (distributed_points.empty()) {
+        return;
+    }
+
+    unsigned int actual_points = std::min(pointCount, (unsigned int)distributed_points.size());
+    vertexArray.resize(actual_points);
+
+    auto it = distributed_points.begin();
+    for (unsigned int i = 0; i < actual_points && it != distributed_points.end(); ++i, ++it) {
+        vertexArray[i].position = *it;
+        
+        float t = static_cast<float>(i) / (actual_points - 1);
+        float curvature = calc_curvature(points, t);
+        
+        if (std::abs(curvature) > .00001f) {
+            vertexArray[i].color = sf::Color::Red;
+        } else if (i % 2 == 0) {
+            vertexArray[i].color = sf::Color::Green;
         } else {
-            std::cerr << "Error: points_on_spline is empty at index " << i << std::endl;
-            break;
-        }
-        std::cout << "test if this happend in redefine_"<< i + 3 << std::endl;
-        // didn't happen
-
-        if (i>0 && i<pointCount){
-            
-            if (abs(calc_curvature(points, t)) > .00001){
-                
-                std::cout << vertexArray[i].position.x - calcPointOnSpline(points, float(i) / float(pointCount)).front().x << vertexArray[i].position.y - calcPointOnSpline(points, float(i) / float(pointCount)).front().y << "\n";
-                vertexArray[i].color = sf::Color::Red;
-            } else if(i % 2 == 0){
-                vertexArray[i].color = sf::Color::Green;
-            } else{
-                vertexArray[i].color = sf::Color::White;
-            }
-
+            vertexArray[i].color = sf::Color::White;
         }
     }
 }
 
-void Spline::draw(sf::RenderTarget& target, sf::RenderStates states) const{
+void DisplaySpline::draw(sf::RenderTarget& target, sf::RenderStates states) const{
     // Apply the transform of the shape
     states.transform *= getTransform();
     // Draw the vertex array

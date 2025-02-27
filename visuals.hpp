@@ -10,7 +10,6 @@
 
 
 void screenSetup();
-sf::Vector2i getMousePos();
 //Class Arc
 
 class Arc : public sf::Drawable, public sf::Transformable {
@@ -23,15 +22,16 @@ private:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
-//Class Spline
+//Class DisplaySpline
 
-class Spline : public sf::Drawable, public sf::Transformable {
+class DisplaySpline : public sf::Drawable, public sf::Transformable {
 public:
-    Spline(std::list<sf::Vector2f> points, unsigned int pointCount);
+    DisplaySpline(std::list<sf::Vector2f> points, unsigned int pointCount);
 
     void redefine(std::list<sf::Vector2f> points, unsigned int pointCount);
 private:
     sf::VertexArray vertexArray;
+    std::list<sf::Vector2f> current_points;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 

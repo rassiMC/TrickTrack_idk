@@ -1,4 +1,3 @@
-
 #include <list>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -136,6 +135,10 @@ float spline_length(std::list<sf::Vector2f> spline_points) {
 }
 
 std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::list<sf::Vector2f> spline_points) {
+    if (spline_points.size() < 2 || length_of_spline <= 0) {
+        return std::list<sf::Vector2f>();
+    }
+
     int pointcount = 0;
     sf::Vector2f previous_point;
     for (std::list<sf::Vector2f>::iterator it = spline_points.begin(); it != spline_points.end(); ++it) {
@@ -143,6 +146,11 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
             pointcount += dist_2f(*it, previous_point) * spline_accuracy / 100.0;
         }
         previous_point = *it;
+    }
+
+    // Add safety check for division by zero
+    if (pointcount <= 0) {
+        return std::list<sf::Vector2f>{spline_points.front()};
     }
 
     std::list<sf::Vector2f> equal_points;
@@ -185,5 +193,11 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
         //std::cout << mylist.front().x << ' ' << mylist.front().y << '\n';
         mylist.pop_front();
     }
+
+    // Ensure we always return at least two points
+    if (equal_points.size() < 2) {
+        equal_points.push_back(spline_points.back());
+    }
+
     return equal_points;
 }

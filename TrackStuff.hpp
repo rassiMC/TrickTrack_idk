@@ -10,11 +10,11 @@
 #include <boost/graph/adjacency_list.hpp>
 
 
-
+    
 class TrackSegment {
 public:
     TrackSegment(std::list<sf::Vector2f> spline_points);
-    std::list<sf::Vector2f> get_points();
+    std::list<sf::Vector2f> get_points() const;
 private:
     int degree;
     std::list<sf::Vector2f> spline_points;
@@ -29,25 +29,24 @@ public:
     sf::Vector2f endpoint;
 
     void add_segment(TrackSegment newsegment);
-    std::list<TrackSegment> get_segments();
+    std::list<TrackSegment> get_segments() const;
 private:
     std::list<TrackSegment> segments;
 };
 
-
-struct VertexProperties {
+// Define vertex properties
+struct VertexProperty {
     sf::Vector2f position;
-    sf::Vector2f direction;
 };
 
-typedef boost::adjacency_list<
-    boost::vecS,                      // OutEdgeList (container for edges)
-    boost::vecS,                      // VertexList (container for vertices)
-    boost::undirectedS,               // Directed or undirected graph
-    VertexProperties,                 // Vertex properties
-    Track                             // Edge properties
-> Graph;
+// Define edge properties
+struct EdgeProperty {
+    Track track;
+};
 
+// Define the graph type
+typedef boost::adjacency_list<boost::listS, boost::vecS, boost::undirectedS,
+    VertexProperty, EdgeProperty> Graph;
 
 class TrackLayout {
 public:
@@ -58,6 +57,7 @@ private:
     Graph layout;
 
     Graph::vertex_descriptor find_vertex(sf::Vector2f point);
+    const Graph& get_layout() const;
 };
 
 #endif

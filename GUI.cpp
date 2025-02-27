@@ -52,3 +52,16 @@ void mouseClicks(){
     sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
 }
+
+bool get_r_click() {
+    return r_click;
+}
+bool get_l_click() {
+    return l_click;
+}
+sf::Vector2i getMousePos() {
+    return sf::Mouse::getPosition();
+}
+sf::Vector2f getMousePosF() {
+    return mousePosF;
+};
