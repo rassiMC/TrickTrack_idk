@@ -84,22 +84,33 @@ Spline::Spline(std::list<sf::Vector2f> points, unsigned int pointCount) {
 }
 
 void Spline::redefine(std::list<sf::Vector2f> points, unsigned int pointCount) {
+    std::cout << "test if this happend in redefine_0" << std::endl;
 
     std::list<sf::Vector2f> points_on_spline = distributeEqualDistance(spline_length(points), points); 
     pointCount = size(points_on_spline);
     
-    std::cout << "hier ist das problem_1";
-    //std::cout << pointCount << '\n';
-    
-    std::cout << "hier ist das problem_2";
     vertexArray.resize(pointCount);
+    std::cout << "test if this happend in redefine_1" << std::endl;
+    // happened
 
     for (unsigned int i = 0; i < pointCount; i++){
         float t = static_cast<float>(i) / (pointCount - 1);
-        vertexArray[i].position = points_on_spline.front();
-        points_on_spline.pop_front();
+        std::cout << "test if this happend in redefine_"<< i + 2 << std::endl;
+        // happened
+        if (!points_on_spline.empty()) {
+            vertexArray[i].position = points_on_spline.front();
+            points_on_spline.pop_front();
+        } else {
+            std::cerr << "Error: points_on_spline is empty at index " << i << std::endl;
+            break;
+        }
+        std::cout << "test if this happend in redefine_"<< i + 3 << std::endl;
+        // didn't happen
+
         if (i>0 && i<pointCount){
+            
             if (abs(calc_curvature(points, t)) > .00001){
+                
                 std::cout << vertexArray[i].position.x - calcPointOnSpline(points, float(i) / float(pointCount)).front().x << vertexArray[i].position.y - calcPointOnSpline(points, float(i) / float(pointCount)).front().y << "\n";
                 vertexArray[i].color = sf::Color::Red;
             } else if(i % 2 == 0){
@@ -107,12 +118,9 @@ void Spline::redefine(std::list<sf::Vector2f> points, unsigned int pointCount) {
             } else{
                 vertexArray[i].color = sf::Color::White;
             }
+
         }
     }
-
-    
-
-    //return length;
 }
 
 void Spline::draw(sf::RenderTarget& target, sf::RenderStates states) const{

@@ -115,7 +115,7 @@ double calc_curvature(std::list<sf::Vector2f> spline_points, float t) {
 
     if (denominator == 0.0) return 0.0; // Avoid division by zero
 
-    return numerator / denominator;
+    return 0.0; //numerator / denominator;
 }
 
 float spline_length(std::list<sf::Vector2f> spline_points) {
@@ -149,7 +149,7 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
     sf::Vector2f current_point;
     equal_points.push_front(spline_points.front());
     float distance_delta = length_of_spline / pointcount;
-    std::cout << distance_delta << ": distance delta \n";
+    // std::cout << distance_delta << ": distance delta \n";
     float target_distance = 0;
     float t = 0;
     float delta_t;
@@ -159,7 +159,7 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
     
     for (int i = 0; i < length_of_spline / distance_delta; i++){
         target_distance += distance_delta;
-        std::cout << "ac_dist: " << actual_distance << " trg_dist: " << target_distance << " t: " << t << '\n';
+        // std::cout << "ac_dist: " << actual_distance << " trg_dist: " << target_distance << " t: " << t << '\n';
         last_t = t;
         t = .5;
         delta_t = .25;
@@ -169,10 +169,10 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
             actual_distance = dist_2f(equal_points.back(), current_point) + accumulated_distance;
             if (actual_distance < target_distance || last_t > t){
                 t = t + delta_t;
-                std::cout << '+';
+                // std::cout << '+';
             }else{
                 t = t - delta_t;
-                std::cout << '-';
+                // std::cout << '-';
             }
             delta_t = delta_t / 2;
         }
@@ -181,8 +181,8 @@ std::list<sf::Vector2f> distributeEqualDistance(float length_of_spline, std::lis
     }
     std::list<sf::Vector2f> mylist = equal_points;
 
-    for (int i; i < size(mylist); i++){
-        std::cout << mylist.front().x << ' ' << mylist.front().y << '\n';
+    for (int i = 0; i < size(mylist); i++){
+        //std::cout << mylist.front().x << ' ' << mylist.front().y << '\n';
         mylist.pop_front();
     }
     return equal_points;

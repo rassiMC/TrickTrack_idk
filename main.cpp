@@ -56,15 +56,17 @@ int main() {
     // Define the range [200, 500)
     std::uniform_real_distribution<float> dist(200.0f, 500.0f);
 
+    TrackLayout TA = TrackLayout();
 
     std::list<Spline> splines;
-    for (unsigned int i; i < 50; i++){
-        for (unsigned int u; u < 3 ; u++){
+    for (unsigned int i = 0; i < 50; i++){  // Initialize i to 0
+        std::list<sf::Vector2f> temp_points;
+        for (unsigned int u = 0; u < 3; u++){  // Initialize u to 0
             sf::Vector2f point = sf::Vector2f(dist(gen), dist(gen));
-            points.push_back(point);
-
+            temp_points.push_back(point);
         }
-        splines.push_back(Spline(points, 100));
+        splines.push_back(Spline(temp_points, 100));
+        temp_points.clear();
     }
 
 
@@ -78,8 +80,6 @@ int main() {
     points.push_back(sf::Vector2f(100.f, 500.f));
   
   
-  //main Loop
-
 
     while (window.isOpen()) {
         sf::Event event;
@@ -90,7 +90,7 @@ int main() {
                 window.close();
             }
         }
-
+        // check mouse clicks
         if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && r_button_held == false) {
             r_click = true;
             r_button_held = true;
@@ -109,7 +109,6 @@ int main() {
                 l_button_held = false;
             }
         }
-
         window.clear(sf::Color::Black);
 
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
@@ -126,11 +125,25 @@ int main() {
         points.push_back(mousePosF);
         window.draw(shape);
         window.draw(arc);  // Draw the arc
-
+        std::cout << "test if this happend before the ecxception3.5" << std::endl;
+        // also happend
         splines.back().redefine(points, 10);
+        std::cout << "test if this happend before the ecxception_4" << std::endl;
+        // says: PAUSED ON EXCEPTION
+        // solution: the exception is thrown in the redefine function
+
         for (const auto& spline : splines) {
-        window.draw(spline);
+            window.draw(spline);
         }
+        for (auto it = boost::edges(TA.get_layout()).first; it != boost::edges(TA.get_layout()).second; ++it) {
+            Track track = TA.get_layout()[*it];
+            for (auto segment : track.get_segments()) {
+                Spline spline = Spline(segment.get_points(), 100);
+                window.draw(spline);
+            }
+        }
+
+
         if (l_click) {
             splines.push_back(Spline(points, 10));
             points.clear();
@@ -139,17 +152,19 @@ int main() {
         }else if (not r_click) {
             points.pop_back();
         }
+        if (l_click) {
+            TrackSegment segment = TrackSegment(points);
+            Track track = Track(segment);
+            TA.add_Track(track);
+            points.clear();
+            points.push_back(mousePosF);
+        }else if (not r_click) {
+            points.pop_back();
+        }
 
         window.display();
 
-        std::cout << "hier ist das problem nicht";
-
         count ++;
-
     }
-
     return 0;
 }
-
-
-

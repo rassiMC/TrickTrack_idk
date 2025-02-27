@@ -29,5 +29,5 @@ std::vector<std::vector<float>> Chunk(64, std::vector<float>(64));
 
 
 float getHeight(sf::Vector2f) {
-    
+    return 0;
 }
