@@ -13,25 +13,47 @@
     
 class TrackSegment {
 public:
-    TrackSegment(std::list<sf::Vector2f> spline_points);
+    TrackSegment(sf::Vector2f startpoint, sf::Vector2f endpoint);
     std::list<sf::Vector2f> get_points() const;
-private:
-    int degree;
-    std::list<sf::Vector2f> spline_points;
+    virtual ~TrackSegment() = default;
+    virtual double get_curvature(float t) const = 0;  // Pure virtual function
+protected:
+    sf::Vector2f startpoint;
+    sf::Vector2f endpoint;
     std::list<double> curvature;
+};
+
+class SplineSegment : public TrackSegment {
+public:
+    SplineSegment(sf::Vector2f startpoint, sf::Vector2f endpoint);
+    double get_curvature(float t) const override;
+private:
+    // Add any spline-specific members here
+};
+
+class CircleSegment : public TrackSegment {
+public:
+    CircleSegment(sf::Vector2f startpoint, sf::Vector2f endpoint);
+    double get_curvature(float t) const override;
+private:
+    sf::Vector2f center;
+    float radius;
+    float start_angle;
+    float end_angle;
 };
 
 class Track {
 public:
     Track();
-    Track(TrackSegment firstsegment);
+    Track(std::unique_ptr<TrackSegment> firstsegment);
+    std::list<sf::Vector2f> get_snappingpoints() const;
+    void add_segment(std::unique_ptr<TrackSegment> newsegment);
+    std::list<std::unique_ptr<TrackSegment>> get_segments() const;
+private:
+    std::list<std::unique_ptr<TrackSegment>> segments;
     sf::Vector2f startpoint;
     sf::Vector2f endpoint;
-
-    void add_segment(TrackSegment newsegment);
-    std::list<TrackSegment> get_segments() const;
-private:
-    std::list<TrackSegment> segments;
+    std::list<sf::Vector2f>snappingpoints;
 };
 
 // Define vertex properties
@@ -54,6 +76,7 @@ public:
     void add_Track(Track newtrack);
     Graph get_layout();
 private:
+    std::list<sf::Vector2f> snappingpoints;
     Graph layout;
 
     Graph::vertex_descriptor find_vertex(sf::Vector2f point);

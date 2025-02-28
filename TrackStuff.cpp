@@ -2,18 +2,39 @@
 #include "TrackStuff.hpp"
 #include "functional.hpp"
 
-
+// i need to work with 1/r as the curvature because it is easier to work with
 
 //Class TrackSegment
 
-TrackSegment::TrackSegment(std::list<sf::Vector2f> spline_points) {
-    degree = size(spline_points) -1;
-    spline_points = spline_points;
+TrackSegment::TrackSegment(sf::Vector2f startpoint, sf::Vector2f endpoint) {
+    startpoint = startpoint;
+    endpoint = endpoint;
 }
 
 std::list<sf::Vector2f> TrackSegment::get_points() const {
-    return spline_points;
+    return std::list<sf::Vector2f>{startpoint, endpoint};
 };
+
+// SplineSegment implementation
+SplineSegment::SplineSegment(sf::Vector2f startpoint, sf::Vector2f endpoint)
+    : TrackSegment(startpoint, endpoint)
+{
+    // Additional initialization for spline segments
+}
+
+double SplineSegment::get_curvature(float t) const {
+
+    return 0.0; // represents a straight line for now
+}
+
+// CircleSegment implementation
+CircleSegment::CircleSegment(sf::Vector2f startpoint, sf::Vector2f endpoint)
+    : TrackSegment(startpoint, endpoint){}
+
+double CircleSegment::get_curvature(float t) const {
+    
+    return 0.0; // represents a straight line for now
+}
 
 // Class Track
 
@@ -22,22 +43,22 @@ Track::Track() {
     endpoint = sf::Vector2f(0, 0);
 }
 
-Track::Track(TrackSegment firstsegment) {
-    segments.push_back(firstsegment);
-    startpoint = firstsegment.get_points().front();
-    endpoint = firstsegment.get_points().back();
+Track::Track(std::unique_ptr<TrackSegment> firstsegment) {
+    segments.push_back(std::move(firstsegment));
+    startpoint = firstsegment->get_points().front();
+    endpoint = firstsegment->get_points().back();
 }
 
-void Track::add_segment(TrackSegment newsegment) {
-    if (newsegment.get_points().front() == startpoint) {
+void Track::add_segment(std::unique_ptr<TrackSegment> newsegment) {
+    if (newsegment->get_points().front() == startpoint) {
         segments.push_front(newsegment);
-        startpoint = newsegment.get_points().front();
-    } else if (newsegment.get_points().back() == endpoint) {
+        startpoint = newsegment->get_points().front();
+    } else if (newsegment->get_points().back() == endpoint) {
         segments.push_back(newsegment);
-        endpoint = newsegment.get_points().back();
+        endpoint = newsegment->get_points().back();
     }
 }
-std::list<TrackSegment> Track::get_segments() const {
+std::list<std::unique_ptr<TrackSegment>> Track::get_segments() const {
     return segments;
 };
 
@@ -50,8 +71,8 @@ TrackLayout::TrackLayout() {
 
 // takes in a track and two points
 void TrackLayout::add_Track(Track newtrack) {
-    sf::Vector2f startpoint = newtrack.startpoint;
-    sf::Vector2f endpoint = newtrack.endpoint;
+    sf::Vector2f startpoint = newtrack.get_snappingpoints().front();
+    sf::Vector2f endpoint = newtrack.get_snappingpoints().back();
 
     Graph::vertex_descriptor start_vertex = find_vertex(startpoint);
     Graph::vertex_descriptor end_vertex = find_vertex(endpoint);

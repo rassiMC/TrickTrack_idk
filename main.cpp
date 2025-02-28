@@ -98,7 +98,7 @@ int main() {
         for (auto it = edge_range.first; it != edge_range.second; ++it) {
             const Track& track = TA.get_layout()[*it].track;
             for (const auto& segment : track.get_segments()) {
-                DisplaySpline spline(segment.get_points(), 100);
+                DisplaySpline spline(segment->get_points(), 100);
             }
             splines.push_back(DisplaySpline(points, 10));
             points.clear();
@@ -106,10 +106,9 @@ int main() {
             
         }
         if (l_click) {
-            
-            
-            TrackSegment segment = TrackSegment(points);
-            Track track = Track(segment);
+            sf::Vector2f start = points.front();
+            sf::Vector2f end = points.back();
+            Track track = Track(std::make_unique<SplineSegment>(start, end));
             TA.add_Track(track);
             points.clear();
             points.push_back(mousePosF);
