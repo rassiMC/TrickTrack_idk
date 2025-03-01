@@ -6,9 +6,9 @@
 
 //Class TrackSegment
 
-TrackSegment::TrackSegment(sf::Vector2f startpoint, sf::Vector2f endpoint) {
-    startpoint = startpoint;
-    endpoint = endpoint;
+TrackSegment::TrackSegment(sf::Vector2f start, sf::Vector2f end) {
+    startpoint = start;
+    endpoint = end;
 }
 
 std::list<sf::Vector2f> TrackSegment::get_points() const {
@@ -29,7 +29,9 @@ double SplineSegment::get_curvature(float t) const {
 
 // CircleSegment implementation
 CircleSegment::CircleSegment(sf::Vector2f startpoint, sf::Vector2f endpoint)
-    : TrackSegment(startpoint, endpoint){}
+    : TrackSegment(startpoint, endpoint){
+    // Additional initialization for circle segments
+    }
 
 double CircleSegment::get_curvature(float t) const {
     
@@ -51,38 +53,42 @@ Track::Track(std::unique_ptr<TrackSegment> firstsegment) {
 
 void Track::add_segment(std::unique_ptr<TrackSegment> newsegment) {
     if (newsegment->get_points().front() == startpoint) {
-        segments.push_front(newsegment);
-        startpoint = newsegment->get_points().front();
+        segments.push_front(std::move(newsegment));
+        startpoint = segments.front()->get_points().front();
     } else if (newsegment->get_points().back() == endpoint) {
-        segments.push_back(newsegment);
-        endpoint = newsegment->get_points().back();
+        segments.push_back(std::move(newsegment));
+        endpoint = segments.back()->get_points().back();
     }
 }
-std::list<std::unique_ptr<TrackSegment>> Track::get_segments() const {
+
+std::list<sf::Vector2f> Track::get_snappingpoints() const {
+    return std::list<sf::Vector2f>{startpoint, endpoint};
+}
+
+const std::list<std::unique_ptr<TrackSegment>>& Track::get_segments() const {
     return segments;
 };
-
-
 
 //Class TrackLayout
 TrackLayout::TrackLayout() {
 
 }
 
-// takes in a track and two points
-void TrackLayout::add_Track(Track newtrack) {
-    sf::Vector2f startpoint = newtrack.get_snappingpoints().front();
-    sf::Vector2f endpoint = newtrack.get_snappingpoints().back();
+// takes in a track
+void TrackLayout::add_Track(Track&& newtrack) {
+    auto track_ptr = std::make_shared<Track>(std::move(newtrack));
+    
+    sf::Vector2f startpoint = track_ptr->get_snappingpoints().front();
+    sf::Vector2f endpoint = track_ptr->get_snappingpoints().back();
 
     Graph::vertex_descriptor start_vertex = find_vertex(startpoint);
     Graph::vertex_descriptor end_vertex = find_vertex(endpoint);
     
     auto edge_pair = boost::add_edge(start_vertex, end_vertex, layout);
     if (edge_pair.second) {
-        layout[edge_pair.first].track = newtrack;
+        layout[edge_pair.first].track = track_ptr;
     }
 }
-
 Graph::vertex_descriptor TrackLayout::find_vertex(sf::Vector2f point) {
     Graph::vertex_iterator vi, vi_end;
     for (boost::tie(vi, vi_end) = boost::vertices(layout); vi != vi_end; ++vi) {

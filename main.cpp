@@ -49,9 +49,9 @@ int main() {
 
     // Create a list of splines
     std::list<DisplaySpline> splines;
-    // WARNING: This list is empty! We need to add at least one spline
 
     DisplaySpline spline(points, 100);
+    splines.push_back(spline);
     
     int count = 0;
     
@@ -88,19 +88,20 @@ int main() {
         points.push_back(mousePosF);
         window.draw(shape);
         window.draw(arc);
-        splines.back().redefine(points, 10);  // Accessing .back() of an empty list!
+        //splines.back().redefine(points, 100);
 
         for (const auto& spline : splines) {
-            window.draw(spline);
+            //window.draw(spline);
         }
         
         auto edge_range = boost::edges(TA.get_layout());
         for (auto it = edge_range.first; it != edge_range.second; ++it) {
-            const Track& track = TA.get_layout()[*it].track;
+            const Track& track = *(TA.get_layout()[*it].track);
             for (const auto& segment : track.get_segments()) {
                 DisplaySpline spline(segment->get_points(), 100);
+                window.draw(spline);
             }
-            splines.push_back(DisplaySpline(points, 10));
+            splines.push_back(DisplaySpline(points, 100));
             points.clear();
             points.push_back(mousePosF);
             
@@ -108,14 +109,14 @@ int main() {
         if (l_click) {
             sf::Vector2f start = points.front();
             sf::Vector2f end = points.back();
-            Track track = Track(std::make_unique<SplineSegment>(start, end));
-            TA.add_Track(track);
+            Track track(std::make_unique<SplineSegment>(start, end));
+            TA.add_Track(std::move(track));
             points.clear();
             points.push_back(mousePosF);
         }
         window.display();
 
         count ++;
-        return 0;
     }
+    return 0;
 }

@@ -46,9 +46,14 @@ class Track {
 public:
     Track();
     Track(std::unique_ptr<TrackSegment> firstsegment);
+    Track(Track&& other) noexcept = default;  // Add move constructor
+    Track& operator=(Track&& other) noexcept = default;  // Add move assignment
+    Track(const Track&) = delete;  // Delete copy constructor
+    Track& operator=(const Track&) = delete;  // Delete copy assignment
+
     std::list<sf::Vector2f> get_snappingpoints() const;
     void add_segment(std::unique_ptr<TrackSegment> newsegment);
-    std::list<std::unique_ptr<TrackSegment>> get_segments() const;
+    const std::list<std::unique_ptr<TrackSegment>>& get_segments() const;
 private:
     std::list<std::unique_ptr<TrackSegment>> segments;
     sf::Vector2f startpoint;
@@ -61,9 +66,9 @@ struct VertexProperty {
     sf::Vector2f position;
 };
 
-// Define edge properties
+// Change EdgeProperty to store shared_ptr to Track
 struct EdgeProperty {
-    Track track;
+    std::shared_ptr<Track> track;
 };
 
 // Define the graph type
@@ -73,7 +78,7 @@ typedef boost::adjacency_list<boost::listS, boost::vecS, boost::undirectedS,
 class TrackLayout {
 public:
     TrackLayout();
-    void add_Track(Track newtrack);
+    void add_Track(Track&& newtrack);
     Graph get_layout();
 private:
     std::list<sf::Vector2f> snappingpoints;
