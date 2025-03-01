@@ -6,9 +6,10 @@
 
 //Class TrackSegment
 
-TrackSegment::TrackSegment(sf::Vector2f start, sf::Vector2f end) {
-    startpoint = start;
-    endpoint = end;
+TrackSegment::TrackSegment(sf::Vector2f start, sf::Vector2f end) 
+    : startpoint(start), endpoint(end)  // Use initialization list instead of assignment
+{
+    // No need for assignments in the body
 }
 
 std::list<sf::Vector2f> TrackSegment::get_points() const {
@@ -46,9 +47,10 @@ Track::Track() {
 }
 
 Track::Track(std::unique_ptr<TrackSegment> firstsegment) {
+    auto points = firstsegment->get_points();
+    startpoint = points.front();
+    endpoint = points.back();
     segments.push_back(std::move(firstsegment));
-    startpoint = firstsegment->get_points().front();
-    endpoint = firstsegment->get_points().back();
 }
 
 void Track::add_segment(std::unique_ptr<TrackSegment> newsegment) {
