@@ -31,6 +31,7 @@ int main() {
     
     // Create a window
     sf::RenderWindow window(sf::VideoMode(2048, 1024), "Tricky_Tracks");
+    setWindow(&window);  // Add this line after window creation
     sf::Vector2f circlePos(100.f, 100.f);
     sf::CircleShape shape(100.f);
     sf::Vertex vertex(sf::Vector2f(10.f, 50.f), sf::Color::Red, circlePos);  
@@ -83,6 +84,8 @@ int main() {
             std::cout << "the number is: " << LOLOLOL; 
         }else {
             shape.setFillColor(sf::Color::Blue);
+            // print mouse position
+            std::cout << "mouse position: " << mousePosF.x << " " << mousePosF.y << std::endl;
         }
         
         points.push_back(mousePosF);

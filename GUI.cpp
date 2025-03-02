@@ -27,6 +27,11 @@ bool l_button_held = false;
 
 sf::Vector2f mousePosF;
 
+static sf::RenderWindow* windowPtr = nullptr;  // Add this at the top with other globals
+
+void setWindow(sf::RenderWindow* window) {
+    windowPtr = window;
+}
 
 void mouseClicks(){
     if (sf::Mouse::isButtonPressed(sf::Mouse::Right) && r_button_held == false){
@@ -49,7 +54,7 @@ void mouseClicks(){
     }
 
     sf::Vector2i mousePos = getMousePos();
-    sf::Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+    mousePosF = sf::Vector2f(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));  // Assign to global variable
 
 }
 
@@ -60,8 +65,15 @@ bool get_l_click() {
     return l_click;
 }
 sf::Vector2i getMousePos() {
-    return sf::Mouse::getPosition();
+    if (windowPtr) {
+        return sf::Mouse::getPosition(*windowPtr);  // Get position relative to window
+    }
+    return sf::Vector2i(0, 0);
 }
 sf::Vector2f getMousePosF() {
-    return mousePosF;
-};
+    if (windowPtr) {
+        sf::Vector2i mousePos = sf::Mouse::getPosition(*windowPtr);  // Get position relative to window
+        return sf::Vector2f(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+    }
+    return sf::Vector2f(0.f, 0.f);
+}
