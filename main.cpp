@@ -60,6 +60,8 @@ int main() {
     points.clear();
 
     points.push_back(sf::Vector2f(100.f, 500.f));
+    sf::Vector2f prev_ancher_point = getMousePosF();
+    points.push_back(prev_ancher_point);
   
   
 
@@ -84,38 +86,36 @@ int main() {
             std::cout << "the number is: " << LOLOLOL; 
         }else {
             shape.setFillColor(sf::Color::Blue);
-            // print mouse position
             std::cout << "mouse position: " << mousePosF.x << " " << mousePosF.y << std::endl;
         }
         
-        points.push_back(mousePosF);
         window.draw(shape);
         window.draw(arc);
         //splines.back().redefine(points, 100);
 
         for (const auto& spline : splines) {
-            //window.draw(spline);
+            window.draw(spline);
         }
         
         auto edge_range = boost::edges(TA.get_layout());
         for (auto it = edge_range.first; it != edge_range.second; ++it) {
             const Track& track = *(TA.get_layout()[*it].track);
             for (const auto& segment : track.get_segments()) {
-                DisplaySpline spline(segment->get_points(), 100);
+                DisplaySpline spline(segment->get_points(), 10);
                 window.draw(spline);
             }
-            splines.push_back(DisplaySpline(points, 100));
-            points.clear();
-            points.push_back(mousePosF);
-            
         }
+        points.push_back(prev_ancher_point);
+        points.push_back(mousePosF);
+        splines.pop_back();
+        splines.push_back(DisplaySpline(points, 500));
+        points.clear();
+
         if (l_click) {
             sf::Vector2f start = points.front();
             sf::Vector2f end = points.back();
             Track track(std::make_unique<SplineSegment>(start, end));
             TA.add_Track(std::move(track));
-            points.clear();
-            points.push_back(mousePosF);
         }
         window.display();
 
