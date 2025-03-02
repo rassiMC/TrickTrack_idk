@@ -79,13 +79,13 @@ class TrackLayout {
 public:
     TrackLayout();
     void add_Track(Track&& newtrack);
-    Graph get_layout();
+    const Graph& get_layout() const;  // Changed to return const reference
+    Graph& get_layout();  // Add non-const version
 private:
     std::list<sf::Vector2f> snappingpoints;
     Graph layout;
 
     Graph::vertex_descriptor find_vertex(sf::Vector2f point);
-    const Graph& get_layout() const;
 };
 
 #endif

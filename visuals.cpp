@@ -65,9 +65,7 @@ void Arc::draw(sf::RenderTarget& target, sf::RenderStates states) const{
 //Class DisplaySpline
 
 DisplaySpline::DisplaySpline(std::list<sf::Vector2f> points, unsigned int pointCount) {
-    std::cout << "Constructor called with " << points.size() << " points" << std::endl;
-    vertexArray = sf::VertexArray(sf::LineStrip, pointCount);  // Initialize with primitive type and size
-    std::cout << "After construction: " << vertexArray.getVertexCount() << " vertices" << std::endl;
+    vertexArray = sf::VertexArray(sf::LineStrip, pointCount);
     
     // Initialize all vertices with a default position and color
     for (size_t i = 0; i < vertexArray.getVertexCount(); ++i) {

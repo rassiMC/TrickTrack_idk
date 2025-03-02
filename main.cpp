@@ -101,7 +101,7 @@ int main() {
         for (auto it = edge_range.first; it != edge_range.second; ++it) {
             const Track& track = *(TA.get_layout()[*it].track);
             for (const auto& segment : track.get_segments()) {
-                DisplaySpline spline(segment->get_points(), 10);
+                DisplaySpline spline(segment->get_points(), 1000);
                 window.draw(spline);
             }
         }
@@ -109,14 +109,16 @@ int main() {
         points.push_back(mousePosF);
         splines.pop_back();
         splines.push_back(DisplaySpline(points, 500));
-        points.clear();
 
         if (l_click) {
+            std::cout << "Left click detected" << std::endl;
             sf::Vector2f start = points.front();
             sf::Vector2f end = points.back();
-            Track track(std::make_unique<SplineSegment>(start, end));
+            Track track(std::make_unique<CircleSegment>(start, end));
             TA.add_Track(std::move(track));
+            prev_ancher_point = mousePosF;
         }
+        points.clear();
         window.display();
 
         count ++;

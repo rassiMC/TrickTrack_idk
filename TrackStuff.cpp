@@ -78,24 +78,28 @@ TrackLayout::TrackLayout() {
 
 // takes in a track
 void TrackLayout::add_Track(Track&& newtrack) {
-    auto track_ptr = std::make_shared<Track>(std::move(newtrack));
-    
-    sf::Vector2f startpoint = track_ptr->get_snappingpoints().front();
-    sf::Vector2f endpoint = track_ptr->get_snappingpoints().back();
+    // Get the snapping points from the track
+    auto points = newtrack.get_snappingpoints();
+    if (points.size() < 2) return;
 
-    Graph::vertex_descriptor start_vertex = find_vertex(startpoint);
-    Graph::vertex_descriptor end_vertex = find_vertex(endpoint);
-    
-    auto edge_pair = boost::add_edge(start_vertex, end_vertex, layout);
-    if (edge_pair.second) {
-        layout[edge_pair.first].track = track_ptr;
-    }
+    // Find or create vertices for the start and end points
+    Graph::vertex_descriptor v1 = find_vertex(points.front());
+    Graph::vertex_descriptor v2 = find_vertex(points.back());
+
+    // Create a shared_ptr to store the track
+    std::shared_ptr<Track> track_ptr = std::make_shared<Track>(std::move(newtrack));
+
+    // Add the edge with the track
+    boost::add_edge(v1, v2, EdgeProperty{track_ptr}, layout);
 }
+
 Graph::vertex_descriptor TrackLayout::find_vertex(sf::Vector2f point) {
-    Graph::vertex_iterator vi, vi_end;
-    for (boost::tie(vi, vi_end) = boost::vertices(layout); vi != vi_end; ++vi) {
-        if (layout[*vi].position == point) {
-            return *vi;
+    // Look for existing vertex
+    auto vp = boost::vertices(layout);
+    for (auto it = vp.first; it != vp.second; ++it) {
+        if (length_sqr(layout[*it].position.x - point.x, 
+                      layout[*it].position.y - point.y) < 100) {
+            return *it;
         }
     }
     Graph::vertex_descriptor new_vertex = boost::add_vertex(layout);
@@ -105,6 +109,7 @@ Graph::vertex_descriptor TrackLayout::find_vertex(sf::Vector2f point) {
 const Graph& TrackLayout::get_layout() const {
     return layout;
 }
-Graph TrackLayout::get_layout() {
+
+Graph& TrackLayout::get_layout() {
     return layout;
 };
